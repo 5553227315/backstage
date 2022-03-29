@@ -1,0 +1,31 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+.mr-5{
+    margin-right: 5px;
+}
+.ml-5{
+    margin-left: 5px;
+}
+.pd-10{
+    padding: 10px 0;
+}
+
+.ml-10 {
+    margin-left: 10px;
+}
+.demo-table-expand {
+    padding: 10px 0 10px 50px;
+    font-size: 0;
+}
+.demo-table-expand label {
+    width: 90px;
+    color: #99a9bf;
+}
+.demo-table-expand .el-form-item {
+    margin-right: 0;
+    margin-bottom: 10px;
+    width: 600px;
+}

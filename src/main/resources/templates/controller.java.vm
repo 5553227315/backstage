@@ -1,0 +1,136 @@
+package ${package.Controller};
+
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.example.filmback.entity.SnowflakeIdWorker;
+import org.springframework.web.bind.annotation.*;
+import javax.annotation.Resource;
+import java.util.List;
+
+import ${package.Service}.${table.serviceName};
+import ${package.Entity}.${entity};
+
+#if(${restControllerStyle})
+import org.springframework.web.bind.annotation.RestController;
+#else
+import org.springframework.stereotype.Controller;
+#end
+#if(${superControllerClassPackage})
+import ${superControllerClassPackage};
+#end
+
+/**
+ * <p>
+ * $!{table.comment} 前端控制器
+ * </p>
+ *
+ * @author ${author}
+ * @since ${date}
+ */
+#if(${restControllerStyle})
+@RestController
+#else
+@Controller
+#end
+@RequestMapping("#if(${package.ModuleName})/${package.ModuleName}#end/#if(${controllerMappingHyphenStyle})${controllerMappingHyphen}#else${table.entityPath}#end")
+#if(${kotlin})
+class ${table.controllerName}#if(${superControllerClass}) : ${superControllerClass}()#end
+
+#else
+#if(${superControllerClass})
+public class ${table.controllerName} extends ${superControllerClass} {
+#else
+public class ${table.controllerName} {
+#end
+    @Resource
+    private ${table.serviceName} ${table.entityPath}Service;
+
+    //新增或者更新
+    @PostMapping
+    public boolean save(@RequestBody ${entity} ${table.entityPath}){
+
+        //判定新增还是更新
+        if (${table.entityPath}.get${entity}Id() == null) {
+            //生成唯一ID
+            SnowflakeIdWorker idWorker = new SnowflakeIdWorker(0, 0);
+            Long id = idWorker.nextId();
+            ${table.entityPath}.set${entity}Id(id);
+            }
+        return ${table.entityPath}Service.saveOrUpdate(${table.entityPath});
+    }
+
+    //删除
+    @DeleteMapping("/{${table.entityPath}Id}")
+    public boolean delete(@PathVariable Long ${table.entityPath}Id){
+        return ${table.entityPath}Service.removeById(${table.entityPath}Id);
+    }
+
+
+    //查询所有
+    @GetMapping
+    public List<${entity}> findall(){
+        return ${table.entityPath}Service.list();
+    }
+
+    //分页查询 mybatis-plus方法
+    @GetMapping("/${table.entityPath}Page")
+    public Page<User> findPage(@RequestParam Integer pageNum,
+                                @RequestParam Integer pageSize
+                                //没有也可以查询
+                                //@RequestParam(defaultValue = "") String ${table.entityPath}Name,
+                                //@RequestParam(defaultValue = "") String userAddress,
+                                //@RequestParam(defaultValue = "") String tel
+        ){
+        Page<${entity}> page = new Page<>(pageNum,pageSize);
+        QueryWrapper<${entity}> queryWrapper = new QueryWrapper<>();
+        //if(!"".equals(${table.entityPath}Name)){
+        //    queryWrapper.like("USER_NAME",${table.entityPath}Name);
+        //}
+        //if (!"".equals(userAddress)){
+        //    queryWrapper.like("USER_ADDRESS",userAddress);
+        //}
+        //if (!"".equals(tel)){
+        //    queryWrapper.like("TEL",tel);
+        //}
+
+        //通过时间倒序
+        queryWrapper.orderByDesc("CREATE_TIME");
+        return ${table.entityPath}Service.page(page,queryWrapper);
+
+        }
+@GetMapping("/export")
+public void export(HttpServletResponse response) throws Exception {
+
+        //从数据库查询所有的数据
+        List<${entity}> list = ${table.entityPath}Service.list();
+        //通过工具类创建writer 写出磁盘路径
+//        ExcelWriter writer = Exception.getWriter(filesUploadPath + "/用户信息.xlsx");
+
+        //在内存操作写出到浏览器
+        ExcelWriter writer = ExcelUtil.getWriter(true);
+
+        //自定义别名
+        writer.addHeaderAlias("", "");
+        writer.addHeaderAlias("", "");
+        writer.addHeaderAlias("", "");
+        writer.addHeaderAlias("", "");
+        writer.addHeaderAlias("", "");
+
+        //一次性写出list对象到Excel，使用默认样式，强制输出标题
+        writer.write(list, true);
+
+        //设置浏览器响应格式
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
+        String fileName = URLEncoder.encode("信息", "UTF-8");
+        response.setHeader("Content-Disposition", "attachment;filename=" + fileName + ".xlsx");
+
+        ServletOutputStream out = response.getOutputStream();
+        writer.flush(out, true);
+        out.close();
+        writer.close();
+        }
+
+
+}
+
+#end
