@@ -32,9 +32,9 @@ public class CodeGenerator {
                     builder.entityBuilder().enableLombok();
                     builder.controllerBuilder().enableHyphenStyle()  // 开启驼峰转连字符
                             .enableRestStyle();  // 开启生成@RestController 控制器
-                    builder.addInclude("admin_info") // 设置需要生成的表名
+                    builder.addInclude("want_watch")// 设置需要生成的表名
 //                            .addTablePrefix("film_");//过滤前缀
-                            .addTableSuffix("_info"); // 设置过滤表后缀
+                            .addTableSuffix("_watch"); // 设置过滤表后缀
                 })
 //                .templateEngine(new FreemarkerTemplateEngine()) // 使用Freemarker引擎模板，默认的是Velocity引擎模板
                 .execute();

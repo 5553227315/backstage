@@ -25,13 +25,15 @@
       <template slot="title"><i class="el-icon-film"></i>
         <span slot="title">电影管理</span>
       </template>
+      <el-menu-item index="swiper"><i class="el-icon-receiving"></i>推荐信息</el-menu-item>
       <el-menu-item index="film"><i class="el-icon-receiving"></i>电影信息</el-menu-item>
     </el-submenu>
     <el-submenu index="3">
       <template slot="title"><i class="el-icon-office-building"></i>
         <span>影院管理</span>
       </template>
-      <el-menu-item index="cinema"><i class="el-icon-document"></i>影院基本信息</el-menu-item>
+      <el-menu-item index="cinema"><i class="el-icon-document"></i>影院信息</el-menu-item>
+      <el-menu-item index="hall"><i class="el-icon-video-camera"></i>放映厅信息</el-menu-item>
       <el-menu-item index="showings"><i class="el-icon-video-camera-solid"></i>电影场次信息</el-menu-item>
     </el-submenu>
     <el-submenu index="4">

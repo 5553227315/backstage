@@ -6,20 +6,22 @@
                :rules="rules"
                ref="form">
         <el-form-item  prop="admin">
-          <el-input size="medium" style="margin: 10px 0" prefix-icon="el-icon-user"   placeholder="请输入管理员账号" v-model="form.admin"/>
+          <el-input size="medium" style="margin: 10px 0" prefix-icon="el-icon-user"   placeholder="请输入管理员账号" v-model="form.admin"@keyup.enter.native="login"/>
         </el-form-item>
         <el-form-item  prop="adminPassword">
-          <el-input size="medium" style="margin: 10px 0" prefix-icon="el-icon-user" show-password placeholder="请输入管理员密码" v-model="form.adminPassword"/>
+          <el-input size="medium" style="margin: 10px 0" prefix-icon="el-icon-user" show-password placeholder="请输入管理员密码" v-model="form.adminPassword"@keyup.enter.native="login"/>
         </el-form-item>
       </el-form>
       <div style="margin: 10px 0; text-align: right">
-        <el-button type="primary" size="small" autocomplete="off" style="width: 100%" @click="login">登录</el-button>
+        <el-button type="primary" size="small" autocomplete="off" style="width: 100%" @click="login" >登录</el-button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import {setRoutes} from "../router";
+
 export default {
   name: "Login",
   data() {
@@ -27,10 +29,6 @@ export default {
       form: {
         admin: '',
         adminPassword: '',
-      },
-      condition:{
-        retCode:0,
-        message:""
       },
       //表单验证，需要在el-form-item元素中增加 prop 属性
       rules: {
@@ -67,20 +65,13 @@ export default {
           console.log("这是登录信息",this.form)
           //使用vue-router路由到指定页面，该方式称之为编程式导航
           this.request.post("/admin/login", this.form).then(res => {
-            this.condition=res
-            if (this.condition.retCode===500){
-              this.loginsuccess(this.condition.message)
-              this.$router.push({
-                path:"/",
-                query:{
-                  adminName:this.condition.adminName
-                }
-              })
-
-            }else {
-              this.loginerror(this.condition.message)
-            }
-            console.log("状态是",this.condition)
+              window.localStorage.setItem("token",res.data.token)
+            window.localStorage.setItem("adminName",res.data.adminName)
+            setRoutes()
+            console.log("路由已经设置")
+              this.loginsuccess(res.msg)
+              this.$router.push("/")
+              console.log("状态是",res)
           })
         } else {
           return false;

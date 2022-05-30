@@ -37,7 +37,11 @@ public class AdminDTO implements Serializable {
     private String adminPassword;
 
     @ApiModelProperty("管理员姓名")
+    @TableField(value = "ADMIN_NAME")
     private String adminName;
 
+    //排除数据库查询次属性
+    @TableField(exist = false)
+    private String token;
 
 }

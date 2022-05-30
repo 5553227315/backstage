@@ -6,6 +6,11 @@
                  @keyup.enter.native="load"></el-input>
       <el-input style="width: 200px" placeholder="请输入片源地" suffix-icon="el-icon-search" v-model="filmSource"
                 @keyup.enter.native="load" class="ml-10"></el-input>
+      <el-select v-model="canfilmShow" placeholder="是否上映" style="width: 200px" class="ml-10">
+        <el-option label="已上映" value="1"></el-option>
+        <el-option label="已下架" value="2"></el-option>
+        <el-option label="待上映" value="3"></el-option>
+      </el-select>
       <el-button class="ml-10" type="primary" @click="load">搜索</el-button>
       <el-button class="ml-5" type="warning" @click="reload">重置</el-button>
     </div>
@@ -14,6 +19,26 @@
       </el-button>
       <el-dialog :title="dialogTitle" :visible.sync="addOrUpdataVisible" width="50%" @close="closeDialog">
         <el-form :model="filmForm" label-width="130px" :rules="rules" ref="filmForm" >
+          <el-form-item label="上传封面：" prop="filmCover">
+            <div style="display: flex;flex-direction:row;">
+              <img
+                  :src="filmForm.filmCover"
+                  v-show="avatarShow"
+                  style="width: 150px; height: 150px; border-radius: 10px;margin-right: 10px"/>
+              <el-upload
+                  :action= "'http://'+serverIp+':9090/files/upload'"
+                  :limit="1"
+                  list-type="picture-card"
+                  :on-success="retUrl"
+                  :on-remove="handleRemove" >
+                <i class="el-icon-plus"></i>
+              </el-upload>
+              <el-dialog :visible.sync="dialogVisible" append-to-body>
+                <img width="100%" :src="dialogImageUrl" alt="">
+              </el-dialog>
+            </div>
+
+          </el-form-item>
           <el-form-item label="电影名称：" prop="filmName">
               <el-input v-model="filmForm.filmName"
                         autocomplete="off"
@@ -21,10 +46,10 @@
                         aria-required="true"></el-input>
           </el-form-item>
           <el-form-item label="导演：" prop="director">
-            <el-input v-model="filmForm.performer" autocomplete="off" style="width: 85%"></el-input>
+            <el-input v-model="filmForm.director" autocomplete="off" style="width: 85%"></el-input>
           </el-form-item>
           <el-form-item label="主演：" prop="performer">
-            <el-input v-model="filmForm.director" autocomplete="off" style="width: 85%"></el-input>
+            <el-input v-model="filmForm.performer" autocomplete="off" style="width: 85%"></el-input>
           </el-form-item>
           <el-form-item label="片长：" prop="filmLength">
             <el-input v-model="filmForm.filmLength"
@@ -81,34 +106,49 @@
     <el-table :data="tableData" border stripe :header-cell-style="{background:'#f1f5f8',borderColor:'#CECECE'}">
       <el-table-column type="expand">
         <template v-slot=props>
-          <el-form label-position="left" inline class="demo-table-expand">
-            <el-form-item label="电影名称：">
-              <span>{{ props.row.filmName}}</span>
-            </el-form-item>
-            <el-form-item label="导演：">
-              <span>{{ props.row.director}}</span>
-            </el-form-item>
-            <el-form-item label="片长：">
-              <span>{{ props.row.filmLength }}分钟</span>
-            </el-form-item>
-            <el-form-item label="电影类型：">
-              <span>{{ props.row.filmType }}</span>
-            </el-form-item>
-            <el-form-item label="片源地：">
-              <span >{{props.row.filmSource}}</span>
-            </el-form-item>
-            <el-form-item label="上映时间：">
-              <span>{{ formatDate(props.row)}}</span>
-            </el-form-item>
-            <el-form-item label="是否上映：">
-              <span>{{ canShow(props.row)}}</span>
-            </el-form-item>
-            <el-form-item label="演员：">
-              <span>{{ props.row.performer }}</span>
-            </el-form-item>
-            <el-form-item label="电影语言：">
-              <span>{{ props.row.filmLanguage }}</span>
-            </el-form-item>
+          <el-form label-position="left" inline >
+            <div style="display: flex;flex-direction: row">
+
+              <div class="demo-table-expand">
+                <el-form-item label="电影名称：">
+                  <span>{{ props.row.filmName}}</span>
+                </el-form-item>
+                <el-form-item label="导演：">
+                  <span>{{ props.row.director}}</span>
+                </el-form-item>
+                <el-form-item label="片长：">
+                  <span>{{ props.row.filmLength }}分钟</span>
+                </el-form-item>
+                <el-form-item label="电影类型：">
+                  <span>{{ props.row.filmType }}</span>
+                </el-form-item>
+                <el-form-item label="片源地：">
+                  <span >{{props.row.filmSource}}</span>
+                </el-form-item>
+                <el-form-item label="上映时间：">
+                  <span>{{ formatDate(props.row)}}</span>
+                </el-form-item>
+                <el-form-item label="是否上映：">
+                  <span>{{ canShow(props.row)}}</span>
+                </el-form-item>
+                <el-form-item label="演员：">
+                  <span>{{ props.row.performer }}</span>
+                </el-form-item>
+                <el-form-item label="电影语言：">
+                  <span>{{ props.row.filmLanguage }}</span>
+                </el-form-item>
+              </div>
+              <div class="cover">
+                <el-form-item label="封面：" prop="filmCover">
+                  <el-image
+                      :src="props.row.filmCover"
+                      :preview-src-list="showBig(props.row)"
+                      style="width: 140px;"/>
+                </el-form-item>
+              </div>
+            </div>
+
+
           </el-form>
           <el-button
               type="info"
@@ -168,19 +208,23 @@
 
 <script>
 import Skeleton from "../components/Skeleton";
+import {serverIp} from "../../public/config";
 export default {
   name: "Film",
   components: {Skeleton},
   data() {
 
     return {
+      serverIp:serverIp,
       loading: true,
       tableData: [],
       total: 0,
       filmName: "",
       filmSource: "",
+      canfilmShow: "",
       addOrUpdataVisible: false,
       dialogTitle: "",
+      avatarShow:true,
       filmForm: this.emptyFilmForm(),
       filmTypeList: [
         {value:"动作", label:"动作"},
@@ -209,7 +253,9 @@ export default {
 
       },
       pageNum: 1,
-      pageSize: 5
+      pageSize: 5,
+      dialogImageUrl: '',
+      dialogVisible: false
     }
   },
 
@@ -219,28 +265,42 @@ export default {
   },
 
   methods: {
+    handleRemove(file) {
+      console.log(file);
+
+    },
+    retUrl(res) {
+      this.filmForm.filmCover = res;
+      this.avatarShow = false;
+    },
     //新增或更改信息弹窗
     handleOpen(type, row) {
       this.addOrUpdataVisible = true;
-      // row.filmType = row.filmType.split(',')
-      row.filmType = row.filmType.split(',')
 
       if (type === 'create') {
         this.dialogTitle = '添加电影';
+        this.avatarShow = false;
         this.filmForm = this.emptyFilmForm();
         setTimeout(() => {this.$refs.filmForm.clearValidate();}, 10);
       } else if (type === 'update') {
+        row.filmType = row.filmType.split(',')
+
         this.filmForm = row;
         this.dialogTitle = '编辑电影资料';
+        if (this.filmForm.filmCover==null){
+          this.avatarShow = false;
+        }else if(this.filmForm.filmCover===""){
+          this.avatarShow = false;
+        }
 
       }
     },
 
     //弹窗关闭
     closeDialog() {
+      this.avatarShow = true;
       this.filmForm = this.emptyFilmForm();
       setTimeout(() => {this.$refs.filmForm.clearValidate();}, 10);
-
       this.load();
     },
 
@@ -278,7 +338,7 @@ export default {
       })
     },
     exp(){
-      window.open("http://localhost:9090/film/export")
+      window.open(`http://${serverIp}:9090/film/export`)
     },
 
 
@@ -296,11 +356,11 @@ export default {
           console.log(this.filmForm)
 
           this.request.post("/film", this.filmForm).then(res => {
-            if (res) {
-              this.$message.success("操作成功")
+            if (res.code==="200") {
+              this.$message.success(res.msg)
               this.load()
             } else {
-              this.$message.error("操作失败")
+              this.$message.error(res.msg)
             }
             this.addOrUpdataVisible = false;
             this.filmForm = this.emptyFilmForm();
@@ -321,16 +381,17 @@ export default {
         type: 'warning'
       }).then(() => {
         this.request.delete("/film/" + id).then(res => {
-          if (res) {
+          console.log(res)
+          if (res.code==="200") {
             this.$message({
               type: 'success',
-              message: '删除成功!'
+              message: res.msg
             });
             this.load();
           } else {
             this.$message({
               type: 'error',
-              message: '删除失败!'
+              message: res.msg
             })
           }
         })
@@ -343,6 +404,11 @@ export default {
 
     },
 
+    //预览大图只能是列表，就返回列表
+    showBig(row){
+      return [row.filmCover]
+
+    },
     //上映选择
     canShow(row) {
       return row.canShow === '1' ? "已上映" : row.canShow === '2' ? "已下架" : row.canShow === '3' ? "待上映" : "无";
@@ -378,18 +444,20 @@ export default {
           pageNum: this.pageNum,
           pageSize: this.pageSize,
           filmName: this.filmName,
-          filmSource: this.filmSource
+          filmSource: this.filmSource,
+          canfilmShow: this.canfilmShow
         }
       }).then(res => {
         console.log(res)
-        this.tableData = res.records
-        this.total = res.total
+        this.tableData = res.data.records
+        this.total = res.data.total
         this.loading = false
       })
     },
     reload() {
       this.filmName = ""
       this.filmSource= ""
+      this.canfilmShow= ""
       this.load()
     },
     handleSizeChange(pageSize) {
@@ -402,13 +470,8 @@ export default {
       this.pageNum = pageNum
       this.load()
     },
-
   }
-
-
 }
 </script>
-
 <style scoped>
-
 </style>

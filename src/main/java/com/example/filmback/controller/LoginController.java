@@ -1,7 +1,7 @@
 package com.example.filmback.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.example.filmback.entity.ReturnInfo;
+import com.example.filmback.common.Result;
+import com.example.filmback.service.impl.AdminServiceImpl;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -10,8 +10,6 @@ import com.example.filmback.service.IAdminService;
 import com.example.filmback.controller.dto.AdminDTO;
 
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Objects;
 
 /**
  * <p>
@@ -25,13 +23,14 @@ import java.util.Objects;
 @RequestMapping("/admin")
 public class LoginController {
     @Resource
-    private IAdminService adminService;
+    private AdminServiceImpl adminService;
 
     @PostMapping("/login")
-    public ReturnInfo login(@RequestBody AdminDTO adminDTO){
+    public Result login(@RequestBody AdminDTO adminDTO){
         String admin = adminDTO.getAdmin();
         String adminPassword = adminDTO.getAdminPassword();
         return adminService.login(admin,adminPassword);
+
     }
 }
 

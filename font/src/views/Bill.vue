@@ -34,15 +34,19 @@
             <el-form-item label="视觉：">
               <span>{{ props.row.showingsVision }}</span>
             </el-form-item>
+            <el-form-item label="放映厅类型：">
+              <span>{{ props.row.cinemaType }}</span>
+            </el-form-item>
             <el-form-item label="影院名称：">
               <span>{{ props.row.cinemaName }}</span>
             </el-form-item>
             <el-form-item label="影院地址：">
-              <span>{{ props.row.cinemaAddress }}</span>
+              <div>{{ props.row.cinemaAddress }}</div>
             </el-form-item>
             <el-form-item label="放映厅号：">
               <span>{{ props.row.hallNumber }}</span>
             </el-form-item>
+
             <el-form-item label="座位位置：">
               <span>{{ props.row.hallPosition }}</span>
             </el-form-item>
@@ -67,15 +71,15 @@
           </el-form>
         </template>
       </el-table-column>
-      <el-table-column prop="userTel" label="账号" width="200">
+      <el-table-column prop="userTel" label="账号" width="100">
       </el-table-column>
-      <el-table-column prop="userName" label="用户名" width="150">
+      <el-table-column prop="userName" label="用户名" width="100">
       </el-table-column>
       <el-table-column prop="filmName" label="电影名" width="170">
       </el-table-column>
       <el-table-column prop="cinemaName" label="影院名" width="130">
       </el-table-column>
-      <el-table-column prop="hallNumber" label="厅号" width="130">
+      <el-table-column prop="hallNumber" label="厅号" width="80">
       </el-table-column>
       <el-table-column prop="hallPosition" label="位置" width="130">
       </el-table-column>
@@ -83,14 +87,18 @@
       </el-table-column>
       <el-table-column prop="filmstartTime" label="开始时间" width="100" :formatter="startT">
       </el-table-column>
+      <el-table-column prop="createBill" label="下单时间" width="150">
+      </el-table-column>
       <el-table-column label="操作">
         <template v-slot=scope>
           <el-button
+              v-show="scope.row.billState===0"
               type="danger"
               style="margin-left: 10px"
-              @click="deleteopen(scope.row.filmId)">
-            删除 <i class="el-icon-remove-outline"></i>
+              @click="deleteopen(scope.row.billId)">
+            退票 <i class="el-icon-remove-outline"></i>
           </el-button>
+          <div v-show="scope.row.billState===1" class="ml-10" style="color: #67C23A">已完成</div>
         </template>
       </el-table-column>
     </el-table>
@@ -112,6 +120,7 @@
 
 <script>
 import Skeleton from "../components/Skeleton";
+import {serverIp} from "../../public/config";
 
 export default {
   name: "Bill",
@@ -141,27 +150,31 @@ export default {
 
     //导出路径
     exp(){
-      window.open("http://localhost:9090/bill/export")
+      window.open(`http://${serverIp}:9090/bill/export`)
     },
 
-    //删除按钮
+    //退票
     deleteopen(id) {
-      this.$confirm('此操作将永久删除该电影, 是否继续?', '提示', {
+      this.$confirm('此操作将删除该订单, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        this.request.delete("/bill/" + id).then(res => {
-          if (res) {
+        this.request.delete("/bill/reticket",{
+          params:{
+            billId:id
+          }
+        }).then(res => {
+          if (res.code==='200') {
             this.$message({
               type: 'success',
-              message: '删除成功!'
+              message: res.msg
             });
             this.load();
           } else {
             this.$message({
               type: 'error',
-              message: '删除失败!'
+              message: res.msg
             })
           }
         })
@@ -250,8 +263,8 @@ export default {
         }
       }).then(res => {
         console.log(res)
-        this.tableData = res.records
-        this.total = res.total
+        this.tableData = res.data.records
+        this.total = res.data.total
         this.loading = false
       })
     },

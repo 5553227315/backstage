@@ -1,8 +1,8 @@
 package com.example.filmback.service;
 
+import com.example.filmback.common.Result;
 import com.example.filmback.controller.dto.AdminDTO;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.example.filmback.entity.ReturnInfo;
 
 /**
  * <p>
@@ -15,5 +15,7 @@ import com.example.filmback.entity.ReturnInfo;
 public interface IAdminService extends IService<AdminDTO> {
 
 
-    ReturnInfo login(String admin, String adminPassword);
+     Result login(String admin, String adminPassword);
+
+
 }

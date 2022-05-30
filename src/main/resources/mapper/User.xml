@@ -11,8 +11,8 @@
             <if test="userPassword != null">
                 USER_PASSWORD = #{userPassword}
             </if>
-            <if test="sex != null">
-                SEX = #{sex},
+            <if test="userGender != null">
+                USER_GENDER = #{userGender},
             </if>
             <if test="birthday != null">
                 BIRTHDAY = #{birthday},

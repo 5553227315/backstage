@@ -12,11 +12,15 @@
     <div style="margin: 10px 0">
       <el-button type="primary" @click="handleOpen('create',null)">新增 <i class="el-icon-circle-plus-outline"></i>
       </el-button>
-      <el-dialog :title="dialogTitle" :visible.sync="addOrUpdataVisible" width="50%" @close="closeDialog">
+      <el-dialog id="showings" :title="dialogTitle" :visible.sync="addOrUpdataVisible" width="50%" @close="closeDialog">
+<!--        <el-dialog :visible.sync="progress">-->
+<!--          <el-progress :percentage="percentage" :status="status" :format="format"></el-progress>-->
+<!--        </el-dialog>-->
         <el-form :model="showingsForm" label-width="130px" :rules="rules" ref="showingsForm" >
           <el-form-item label="电影名称：" prop="filmName">
 <!--            可搜索filterable；可远程搜索remote-->
             <el-select
+                :disabled="dialogTitle!=='添加场次'"
                 v-model="showingsForm.filmName"
                 :clearable="true"
                 filterable
@@ -40,10 +44,12 @@
           </el-form-item>
           <el-form-item label="影院名称：" prop="cinemaName">
             <el-select
+                :disabled="dialogTitle!=='添加场次'"
                 v-model="showingsForm.cinemaName"
                 :clearable="true"
                 filterable
                 remote
+                clearable
                 reserve-keyword
                 placeholder="请输入影院名称关键词"
                 style="width: 85%"
@@ -62,22 +68,33 @@
             </el-select>
           </el-form-item>
           <el-form-item label="场次日期：" prop="showingsDate">
-            <el-date-picker type="date" placeholder="选择日期" v-model="showingsForm.showingsDate" style="width: 85%;">
+            <el-date-picker type="date"
+                            :disabled="dialogTitle!=='添加场次'"
+                            placeholder="选择日期"
+                            v-model="showingsForm.showingsDate"
+                            style="width: 85%;">
             </el-date-picker>
           </el-form-item>
           <el-form-item label="开始时间：" prop="filmstartTime">
-            <el-time-picker placeholder="选择开场时间" v-model="showingsForm.filmstartTime" style="width: 85%;">
+            <el-time-picker placeholder="选择开场时间" :disabled="dialogTitle!=='添加场次'" v-model="showingsForm.filmstartTime" style="width: 85%;">
             </el-time-picker>
           </el-form-item>
           <el-form-item label="语言视觉：" prop="showingsVision">
-            <template slot="prepend">{{showingsForm.filmLanguage}}</template>
-            <el-select v-model="showingsForm.showingsVision" placeholder="选择视觉" style="width: 85%">
+            <el-select v-model="showingsForm.showingsVision" :disabled="dialogTitle!=='添加场次'" placeholder="选择视觉" style="width: 85%">
               <el-option label="2D" value="2D"></el-option>
               <el-option label="3D" value="3D"></el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="放映厅：" prop="hallNumber">
-            <el-input v-model="showingsForm.hallNumber" autocomplete="off" style="width: 85%"></el-input>
+            <el-select v-model="showingsForm.hallNumber" :disabled="dialogTitle!=='添加场次'" clearable placeholder="选择放映厅" style="width: 85%" @change="hallremoteMethod(showingsForm.cinemaId,$event)">
+              <el-option
+                  v-for="item in emptyhallForm"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value">
+
+              </el-option>
+            </el-select>
           </el-form-item>
           <el-form-item label="本场价格：" prop="showingsPrice">
             <el-input v-model="showingsForm.showingsPrice" autocomplete="off" style="width: 85%"></el-input>
@@ -95,7 +112,7 @@
     <el-table :data="tableData" border stripe :header-cell-style="{background:'#f1f5f8',borderColor:'#CECECE'}">
       <el-table-column type="expand">
         <template v-slot=props>
-          <el-form label-position="left" inline class="demo-table-expand">
+          <el-form label-position="left" inline class="demo-table-expand2">
             <el-form-item label="电影名称：">
               <span>{{ props.row.filmName}}</span>
             </el-form-item>
@@ -111,7 +128,6 @@
             <el-form-item label="放映厅号：">
               <span>{{ props.row.hallNumber }}</span>
             </el-form-item>
-
             <el-form-item label="片长：">
               <span >{{props.row.filmLength}}分钟 </span>
             </el-form-item>
@@ -152,14 +168,16 @@
       <el-table-column prop="showingsPrice" label="本场价格" width="80">
       </el-table-column>
       <el-table-column label="操作">
-        <template v-slot=scope>
+        <template v-slot=scope >
           <el-button
+              v-show="isShowBtn(scope.row)"
               type="success"
               style="margin-left: 10px"
               @click="handleOpen('update',scope.row)">
             编辑 <i class="el-icon-edit-outline"></i>
           </el-button>
           <el-button
+              v-show="isShowBtn(scope.row)"
               type="danger"
               style="margin-left: 10px"
               @click="deleteopen(scope.row.showingsId)">
@@ -186,12 +204,63 @@
 
 <script>
 import Skeleton from "../components/Skeleton";
+import {serverIp} from "../../public/config";
 
 export default {
   name: "Showings",
   components: {Skeleton},
   data() {
+    var timeValidator = (rule,value,callback)=>{
+      let date = this.showingsForm.showingsDate
+      console.log("这是现在的时间",(date).toString().substring(0,10))
 
+      if (!date){
+        callback(new Error("请先选择开始时间"))
+      }else {
+        let newDate = (new Date()).toString().substring(0,10)
+        console.log("这是现在的时间2",newDate)
+        let h = new Date().getHours()
+        let m = new Date().getMinutes()
+        let valueh = new Date(value).getHours()
+        let valuem = new Date(value).getMinutes()
+        if ((date).toString().substring(0,10)===newDate){
+          if (valueh>h){
+            callback()
+          }else {
+            if (valuem>m){
+              callback()
+            }else {
+              callback(new Error("开场时间不得设置在目前时间之前"))
+            }
+          }
+        }else {
+          callback();
+        }
+      }
+
+    };
+    var dateValidator = (rule,value,callback)=>{
+
+
+      if(!value){
+        callback(new Error("请选择日期"))
+      }else {
+        let newdate = new Date()
+        newdate = Date.parse(newdate.toLocaleDateString())
+        value = Date.parse(value.toLocaleDateString())
+        console.log("这是现在的日期",newdate)
+        console.log("这是比较的日期",value)
+        if(value<newdate){
+          callback(new Error("不得选择今天之前的日期"))
+        }else {
+          callback()
+        }
+      }
+
+
+
+
+    };
     return {
       loading: true,
       tableData: [],
@@ -210,13 +279,10 @@ export default {
           {required: true, message: '请输入片源地', trigger: 'blur'}
         ],
         showingsDate: [
-          { required: true, message: '请选择日期', trigger: 'change'}
+          { required: true, validator: dateValidator, trigger: 'change'}
         ],
         filmstartTime: [
-          {required: true, message: '请选择日期', trigger: 'change'}
-        ],
-        filmendTime: [
-          { required: true, message: '请选择开场时间', trigger: 'change' }
+          {required: true, validator: timeValidator, trigger: 'change'}
         ],
         showingsVision: [
           {required: true, message: '请选择活视觉', trigger: 'change'}
@@ -238,6 +304,7 @@ export default {
       loadingcinema:false,
       emptyfilmlist:[],
       emptycinemaList: [],
+      emptyhallForm: [],
       averagefilmSource:""
     }
   },
@@ -245,8 +312,23 @@ export default {
   created() {
     //请求分页查询数据
     this.load()
+
   },
   methods: {
+
+    isShowBtn(row){
+      var date1 = new Date();
+      var date2 = new Date(row.filmstartTime);
+      console.log("这是row",row)
+      console.log(date1.getTime()>date2.getTime())
+
+      if (date1.getTime()<date2.getTime()){
+        return true
+      }else {
+        return false
+      }
+    },
+
     filmremoteMethod(query) {
       //远程搜索机构
       console.log(query)
@@ -254,7 +336,8 @@ export default {
         params:{
           filmName:query
         }}).then(res =>{
-        this.filmList = res;
+          console.log(res)
+        this.filmList = res.data;
         console.log(this.filmList)
         this.emptyfilmlist = this.filmList.map(item =>{
           this.showingsForm.filmId=item.filmId
@@ -276,18 +359,6 @@ export default {
       console.log("event是：",event)
       this.filmremoteMethod(event)
     },
-    //获取评分
-    getScore(filmName) {
-      this.request('/showings/evaluate', {
-        params: {
-          filmName: filmName
-        }}).then(res => {
-        this.averagefilmSource= res.score
-        console.log("这是待保存的评分",this.averagefilmSource)
-      })
-    },
-
-
     //影院远程搜索
     cinemaremoteMethod(query) {
       //远程搜索机构
@@ -295,42 +366,71 @@ export default {
       this.request('/showings/cinemaName',{
         params:{
           cinemaName:query
-        }}).then(res =>{
-        this.cinemaList = res;
+        }}).then(res => {
+        console.log(res)
+        this.cinemaList = res.data;
         console.log(this.cinemaList)
-        this.emptycinemaList = this.cinemaList.map(item =>{
-          this.showingsForm.cinemaId=item.cinemaId
+        this.emptycinemaList = this.cinemaList.map(item => {
+          this.showingsForm.cinemaId = item.cinemaId
+          this.hallremoteMethod(this.showingsForm.cinemaId, null)
+          console.log("这是cinemaId", this.showingsForm.cinemaId)
           return {
             value: item.cinemaName,
             label: item.cinemaName,
             cinemaId: item.cinemaId,
           }
         })
-        console.log("这是item",this.emptycinemaList)
+        console.log("这是emptycinemaList",this.emptycinemaList)
+        console.log("这是showingFrom",this.showingsForm)
+
       })
     },
     cinemaselectchange(event){
       this.cinemaremoteMethod(event)
     },
+    hallremoteMethod(cinemaId,hallNumber){
+      this.request('/showings/hall',{
+        params:{
+          cinemaId:cinemaId,
+          hallNumber: hallNumber
+        }}).then(res =>{
+          console.log(res)
+        this.emptyhallForm = res.data.map(item=>{
+          this.showingsForm.hallId=item.hallId
+          this.showingsForm.cinemaType=item.cinemaType
+          return {
+            value: item.hallNumber,
+            label: item.hallNumber,
+            hallId: item.hallId,
+            cinemaType:item.cinemaType
+          }
+        })
+        console.log("emptyhallForm",this.emptyhallForm)
+        console.log("hallId:",this.showingsForm.hallId)
+        console.log("cinemaType:",this.showingsForm.cinemaType)
+      })
+    },
     //新增或更改信息弹窗
     handleOpen(type, row) {
       this.addOrUpdataVisible = true;
       if (type === 'create') {
-        this.dialogTitle = '添加电影';
+        this.dialogTitle = '添加场次';
         this.showingsForm = this.emptyShowingsForm();
         setTimeout(() => {this.$refs.showingsForm.clearValidate();}, 10);
       } else if (type === 'update') {
         this.showingsForm = row;
         this.showingsForm.showingsDate = this.formatDate(row)
-        this.dialogTitle = '编辑电影资料';
+        this.dialogTitle = '编辑电场次资料';
 
       }
     },
 
     //弹窗关闭
     closeDialog() {
-      this.showingsForm = this.emptyShowingsForm();
-      setTimeout(() => {this.$refs.showingsForm.clearValidate();}, 10);
+      setTimeout(() => {
+        this.showingsForm = this.emptyShowingsForm();
+        this.$refs.showingsForm.clearValidate();
+      }, 10);
     },
 
     emptyShowingsForm(){
@@ -348,6 +448,8 @@ export default {
         filmLanguage:"",
         showingsVision:"",
         hallNumber: "",
+        hallId:"",
+        cinemaType:"",
         showingsPrice: ""
       }
     },
@@ -361,22 +463,26 @@ export default {
           });
     },
     exp(){
-      window.open("http://localhost:9090/showings/export")
+      window.open(`http://${serverIp}:9090/cinema/export`)
     },
 
 
     //弹窗保存按钮
-    save() {
+     save() {
       // 校验
       let showingsdate = new Date(this.showingsForm.showingsDate)
       let showingsstarttime = new Date(this.showingsForm.filmstartTime)
-      showingsdate = showingsdate.getFullYear() + '-' + (showingsdate.getMonth()+1) + '-' + showingsdate.getDate()
-      this.showingsForm.filmstartTime = showingsdate + ' ' + this.getH(showingsstarttime)+':'+this.getM(showingsstarttime)+':'+this.getS(showingsstarttime)
+      showingsdate = showingsdate.getFullYear() + '-' + (showingsdate.getMonth()+1)
+          + '-' + showingsdate.getDate()
+      this.showingsForm.filmstartTime = showingsdate + ' ' + this.getH(showingsstarttime)
+          +':'+this.getM(showingsstarttime)+':'+this.getS(showingsstarttime)
       showingsstarttime = new Date(this.showingsForm.filmstartTime)
       console.log("开始时间是", showingsstarttime)
       console.log("获取的分钟是",showingsstarttime.getMinutes())
-      console.log("加完之后的分钟是",showingsstarttime.getMinutes()+parseInt(this.showingsForm.filmLength))
-      let showingsendtime = new Date(showingsstarttime.setMinutes(showingsstarttime.getMinutes()+parseInt(this.showingsForm.filmLength)))
+      console.log("加完之后的分钟是"
+          ,showingsstarttime.getMinutes()+parseInt(this.showingsForm.filmLength))
+      let showingsendtime = new Date(showingsstarttime.setMinutes(showingsstarttime.getMinutes()
+          +parseInt(this.showingsForm.filmLength)))
       console.log("加上后的时间是",showingsendtime)
       console.log("这是加上后的小时",showingsendtime.getHours())
       this.showingsForm.filmendTime = showingsendtime.getFullYear()+ '-'
@@ -388,24 +494,29 @@ export default {
       console.log("这是保存的form",this.showingsForm.filmendTime)
       console.log("这是保存是电影名",this.showingsForm.filmName)
 
-
-      this.$refs['showingsForm'].validate((valid) => {
+      this.$refs['showingsForm'].validate( (valid) => {
         if (valid) {
-          this.getScore(this.showingsForm.filmName)
-          console.log("这是出来的评分",this.averagefilmSource)
-
-          this.showingsForm.filmScore = this.averagefilmSource
-          console.log("这是保存的form",this.showingsForm)
-          this.request.post("/showings", this.showingsForm).then(res => {
-            if (res) {
-              this.$message.success("操作成功")
-              this.load()
-            } else {
-              this.$message.error("操作失败")
-            }
-            this.addOrUpdataVisible = false;
-            this.showingsForm = this.emptyShowingsForm();
-            setTimeout(() => {this.$refs.showingsForm.clearValidate();}, 10);
+          this.request('/showings/evaluate', {
+            params: {
+              filmId: this.showingsForm.filmId
+            }}).then(res => {
+              this.showingsForm.filmScore = res.data
+            console.log("这是保存的form", this.showingsForm)
+            this.request.post("/showings", this.showingsForm).then(res => {
+              if (res.code==="200") {
+                this.$message.success(res.msg)
+                this.load()
+              } else if (res.code==="404"){
+                this.$message.error(res.msg)
+              }else{
+                this.$message.error(res.msg)
+              }
+              this.addOrUpdataVisible = false;
+              this.showingsForm = this.emptyShowingsForm();
+              setTimeout(() => {
+                this.$refs.showingsForm.clearValidate();
+              }, 10);
+            })
           })
 
         } else {
@@ -422,16 +533,16 @@ export default {
         type: 'warning'
       }).then(() => {
         this.request.delete("/showings/" + id).then(res => {
-          if (res) {
+          if (res.code==="200") {
             this.$message({
               type: 'success',
-              message: '删除成功!'
+              message: res.msg
             });
             this.load();
           } else {
             this.$message({
               type: 'error',
-              message: '删除失败!'
+              message: res.msg
             })
           }
         })
@@ -533,6 +644,7 @@ export default {
     },
 
 
+
     //封装的加载数据类
     load() {
       this.request("/showings/showingsPage", {
@@ -543,12 +655,17 @@ export default {
           cinemaName: this.cinemaName
         }
       }).then(res => {
-        console.log(res)
-        this.tableData = res.records
-        console.log(this.tableData)
-        this.total = res.total
-        this.loading = false
-        console.log("这是最开始的",this.tableData)
+        if (res.code==="200"){
+          console.log(res)
+          this.tableData = res.data.records
+          console.log(this.tableData)
+          this.total = res.data.total
+          this.loading = false
+          console.log("这是最开始的",this.tableData)
+        }else {
+          this.loading = false
+        }
+
       })
     },
     reload() {
@@ -573,5 +690,6 @@ export default {
 </script>
 
 <style scoped>
+
 
 </style>

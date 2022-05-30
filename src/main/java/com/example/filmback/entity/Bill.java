@@ -1,12 +1,12 @@
 package com.example.filmback.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.example.filmback.common.Result;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.annotations.ApiModel;
@@ -32,14 +32,14 @@ public class Bill implements Serializable {
 
     //将Long转成string
     @JsonSerialize(using = ToStringSerializer.class)
-//“type”：设置主键类型、如果数据库主键设置了自增建议使用“AUTO”(value="",type=Idtype.AUTO)
-    @TableId(value = "Bill_ID")
+    //“type”：设置主键类型、如果数据库主键设置了自增建议使用“AUTO”(value="",type=Idtype.AUTO)
+    @TableId(value = "BILL_ID")
     @ApiModelProperty("订单ID")
     private Long billId;
 
     //将Long转成string
     @JsonSerialize(using = ToStringSerializer.class)
-//“type”：设置主键类型、如果数据库主键设置了自增建议使用“AUTO”(value="",type=Idtype.AUTO)
+    //“type”：设置主键类型、如果数据库主键设置了自增建议使用“AUTO”(value="",type=Idtype.AUTO)
     @ApiModelProperty("用户ID")
     private Long userId;
 
@@ -61,12 +61,15 @@ public class Bill implements Serializable {
     @ApiModelProperty("语言")
     private String filmLanguage;
 
+    @ApiModelProperty("语言")
+    private String filmCover;
+
     @ApiModelProperty("视觉：2D；3D")
     private String showingsVision;
 
     //将Long转成string
     @JsonSerialize(using = ToStringSerializer.class)
-//“type”：设置主键类型、如果数据库主键设置了自增建议使用“AUTO”(value="",type=Idtype.AUTO)
+    //“type”：设置主键类型、如果数据库主键设置了自增建议使用“AUTO”(value="",type=Idtype.AUTO)
     @ApiModelProperty("影院ID")
     private Long cinemaId;
 
@@ -76,8 +79,29 @@ public class Bill implements Serializable {
     @ApiModelProperty("地址")
     private String cinemaAddress;
 
+    @ApiModelProperty("影院坐标")
+    private Result cinemaLocation;
+
+    //将Long转成string
+    @JsonSerialize(using = ToStringSerializer.class)
+//“type”：设置主键类型、如果数据库主键设置了自增建议使用“AUTO”(value="",type=Idtype.AUTO)
+    @ApiModelProperty("放映厅ID")
+    private Long hallId;
+
     @ApiModelProperty("放映厅号")
     private String hallNumber;
+
+    @ApiModelProperty("影厅类型：IMAX厅、CGS中国巨幕厅、Dolby Cinema厅、ReaID厅、4K厅、ReaID 6FL厅、LUXE巨幕厅、4DX厅、DTS:X临境音厅、4D厅、巨幕厅")
+    private String cinemaType;
+
+    //将Long转成string
+    @JsonSerialize(using = ToStringSerializer.class)
+    @ApiModelProperty("场次ID")
+    private Long showingsId;
+
+    @ApiModelProperty("座位ID列表")
+    @TableField(value = "SEAT_IDLIST")
+    private String seatIdlist;
 
     @ApiModelProperty("座位位置")
     private String hallPosition;
@@ -96,6 +120,9 @@ public class Bill implements Serializable {
 
     @ApiModelProperty("下单时间")
     private String createBill;
+
+    @ApiModelProperty("订单状态，0待使用，1已完成")
+    private Integer billState;
 
 
 }

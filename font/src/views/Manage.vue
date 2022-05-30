@@ -6,7 +6,7 @@
       <el-container>
 
         <el-header style="border-bottom: 1px solid #cccccc">
-          <Header :collapseBtnClass="collapseBtnClass" :collapse="collapse" :adminName="adminName"/>
+          <Header :collapseBtnClass="collapseBtnClass" :collapse="collapse" :adminName="adminName" :exit="exit"/>
         </el-header>
 
         <el-main style="padding-top: 5px">
@@ -25,6 +25,7 @@
 
 import Aside from "../components/Aside";
 import Header from "../components/Header";
+import router from "../router";
 
 export default {
   name: 'Manage',
@@ -54,7 +55,7 @@ export default {
     console.log(this.active)
   },
   created() {
-    this.adminName = this.$route.query.adminName
+    this.adminName = window.localStorage.getItem("adminName")
   },
   methods:{
     collapse(){  //点击收缩按钮触发
@@ -71,6 +72,13 @@ export default {
         this.logoTextShow=!this.logoTextShow
       }
     },
+    exit(){
+      this.$router.push('/login')
+      window.localStorage.clear()
+      this.$message.success("退出成功！")
+      window.localStorage.removeItem("token")
+
+    }
   }
 }
 </script>

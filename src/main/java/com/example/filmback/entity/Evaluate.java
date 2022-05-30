@@ -1,5 +1,6 @@
 package com.example.filmback.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.io.Serializable;
@@ -30,12 +31,19 @@ public class Evaluate implements Serializable {
 
     //将Long转成string
     @JsonSerialize(using = ToStringSerializer.class)
-//“type”：设置主键类型、如果数据库主键设置了自增建议使用“AUTO”(value="",type=Idtype.AUTO)
+    //“type”：设置主键类型、如果数据库主键设置了自增建议使用“AUTO”(value="",type=Idtype.AUTO)
     @TableId(value = "EVALUATE_ID")
     private Long evaluateId;
 
+    //将Long转成string
+    @JsonSerialize(using = ToStringSerializer.class)
     @ApiModelProperty("用户ID")
     private Long userId;
+
+    //将Long转成string
+    @JsonSerialize(using = ToStringSerializer.class)
+    @ApiModelProperty("订单ID")
+    private Long billId;
 
     @ApiModelProperty("用户名")
     private String userName;
@@ -46,6 +54,8 @@ public class Evaluate implements Serializable {
     @ApiModelProperty("电影名")
     private String filmName;
 
+    //将Long转成string
+    @JsonSerialize(using = ToStringSerializer.class)
     @ApiModelProperty("电影ID")
     private Long filmId;
 
@@ -57,4 +67,7 @@ public class Evaluate implements Serializable {
 
     @ApiModelProperty("创建时间")
     private String createEvaluate;
+
+    @TableField(exist = false)
+    private String avatarUrl;
 }

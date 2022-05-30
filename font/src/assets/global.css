@@ -12,7 +12,17 @@
 .pd-10{
     padding: 10px 0;
 }
-
+.flex-row{
+    display: flex;
+    flex-direction: row;
+}
+.flex-column{
+    display: flex;
+    flex-direction: column;
+}
+.m-10{
+    margin: 10px;
+}
 .ml-10 {
     margin-left: 10px;
 }
@@ -27,5 +37,36 @@
 .demo-table-expand .el-form-item {
     margin-right: 0;
     margin-bottom: 10px;
+    width: 260px;
+}
+
+.cover label {
+    width: 90px;
+    color: #99a9bf;
+}
+.cover .el-form-item {
+    margin-right: 0;
+    margin-bottom: 10px;
+    width: 800px;
+}
+
+.demo-table-expand2 {
+    padding: 10px 0 10px 50px;
+    font-size: 0;
+}
+.demo-table-expand2 label {
+    width: 90px;
+    color: #99a9bf;
+}
+.demo-table-expand2 .el-form-item {
+    margin-right: 0;
+    margin-bottom: 10px;
     width: 600px;
+}
+/*过度动画domActive*/
+.domActive-enter-active {
+    transition: opacity 1s;
+}
+.domActive-enter {
+    opacity: 0;
 }

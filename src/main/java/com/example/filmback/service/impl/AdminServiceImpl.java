@@ -1,11 +1,14 @@
 package com.example.filmback.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.example.filmback.common.Constants;
+import com.example.filmback.common.Result;
 import com.example.filmback.controller.dto.AdminDTO;
-import com.example.filmback.entity.ReturnInfo;
+import com.example.filmback.exception.ServiceException;
 import com.example.filmback.mapper.AdminMapper;
 import com.example.filmback.service.IAdminService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.filmback.utils.TokenUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,28 +26,28 @@ import java.util.Objects;
 public class AdminServiceImpl extends ServiceImpl<AdminMapper, AdminDTO> implements IAdminService {
 
     @Override
-    public ReturnInfo login(String admin, String adminPassword) {
+    public Result login(String admin, String adminPassword) {
         QueryWrapper<AdminDTO> queryWrapper = new QueryWrapper<>();
-        ReturnInfo returnInfo = new ReturnInfo();
-        List<AdminDTO> one = list(queryWrapper);
+
         if (!"".equals(admin)) {
             queryWrapper.eq("ADMIN", admin);
         }
-
+        List<AdminDTO> one = list(queryWrapper);
         if (one.size()==0){
-            returnInfo.setMessage("用户名不存在");
-            returnInfo.setRetCode(200);
+            throw new  ServiceException(Constants.CODE_404,"用户不存在");
 
         }else {
+            String token = TokenUtils.getToken(admin,adminPassword);
+            one.get(0).setToken(token);
+            System.out.println(one.get(0));
             if (Objects.equals(adminPassword, one.get(0).getAdminPassword())){
-                returnInfo.setMessage("登录成功");
-                returnInfo.setRetCode(500);
-                returnInfo.setAdminName(one.get(0).getAdminName());
+                return Result.success("登录成功！"+one.get(0).getAdminName(),one.get(0));
             }else{
-                returnInfo.setMessage("密码不正确");;
-                returnInfo.setRetCode(201);
+
+                throw new ServiceException(Constants.CODE_401,"密码不正确");
             }
         }
-        return returnInfo;
+
     }
+
 }

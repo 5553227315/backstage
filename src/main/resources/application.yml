@@ -1,5 +1,7 @@
 server:
+  ip: 47.106.198.145
   port: 9090
+
 
 
 spring:
@@ -8,11 +10,22 @@ spring:
     url: jdbc:mysql://47.106.198.145:3306/film2022?serverTimezone=UTC
     username: admin
     password: Wyz88201899..
+    hikari:
+      max-lifetime: 500000
 
+#上传文件大小限制
+  servlet:
+    multipart:
+      max-file-size: 5MB
 mybatis:
   mapper-locations: classpath:mapper/*.xml
-#  configuration:
+#  configuration: 
 #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 mybatis-plus:
   configuration:
       log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+files:
+  upload:
+    path: D:/MyLife/GraduationProject/CinemaTicket/backstage/files/
+#    path: /home/files/

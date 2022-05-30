@@ -40,13 +40,11 @@ public class User implements Serializable {
     private String userName;
 
     @ApiModelProperty("性别：1.男、2.女")
-    private String sex;
+    private String userGender;
 
     @ApiModelProperty("用户生日")
     private String birthday;
 
-    @ApiModelProperty("用户所城市")
-    private String userCity;
 
     @ApiModelProperty("手机号码")
     private String userTel;

@@ -84,7 +84,7 @@ export default {
   methods: {
 
     exp(){
-      window.open("http://localhost:9090/user/export")
+      window.open(`http://${serverIp}:9090/cinema/export`)
     },
 
     //删除按钮
@@ -95,16 +95,17 @@ export default {
         type: 'warning'
       }).then(() => {
         this.request.delete("/evaluate/" + id).then(res => {
-          if (res) {
+          console.log(res)
+          if (res.code==="200") {
             this.$message({
               type: 'success',
-              message: '删除成功!'
+              message: res.msg
             });
             this.load();
           } else {
             this.$message({
               type: 'error',
-              message: '删除失败!'
+              message: res.msg
             })
           }
         })
@@ -129,8 +130,8 @@ export default {
         }
       }).then(res => {
         console.log(res)
-        this.tableData = res.records
-        this.total = res.total
+        this.tableData = res.data.records
+        this.total = res.data.total
         this.loading = false
       })
     },

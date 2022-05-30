@@ -1,5 +1,6 @@
 package com.example.filmback.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.TableId;
 
@@ -9,6 +10,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -58,12 +60,21 @@ public class Film implements Serializable {
     @ApiModelProperty("封面")
     private String filmCover;
 
+    @ApiModelProperty("电影评分")
+    @TableField(exist = false)
+    private String filmScore;
+
     private String canShow;
 
     private String createFilm;
 
+
     private String performer;
 
     private String filmLanguage;
+    @TableField(exist = false)
+    private Integer evaLength;
+    @TableField(exist = false)
+    private Integer maxlength;
 
 }

@@ -1,5 +1,6 @@
 package com.example.filmback.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.io.Serializable;
@@ -41,8 +42,27 @@ public class Cinema implements Serializable {
     @ApiModelProperty("地址")
     private String cinemaAddress;
 
+    @ApiModelProperty("省")
+    private String cinemaProvince;
+
+    @ApiModelProperty("市")
+    private String cinemaCity;
+
+    @ApiModelProperty("区")
+    private String cinemaCounty;
+
+    @ApiModelProperty("详情")
+    private String cinemaDetailed;
+
+    @ApiModelProperty("改签：1.可以、2.不可以")
+    private String isRebook;
+
+    @ApiModelProperty("退票：1.可以、2.不可以")
+    private String isReticket;
+
     @ApiModelProperty("最低价格")
-    private String bottomPrice;
+    @TableField(exist = false)
+    private Integer bottomPrice;
 
     @ApiModelProperty("影厅类型：IMAX厅、CGS中国巨幕厅、Dolby Cinema厅、ReaID厅、4K厅、ReaID 6FL厅、LUXE巨幕厅、4DX厅、DTS:X临境音厅、4D厅、巨幕厅")
     private String cinemaType;
@@ -53,8 +73,22 @@ public class Cinema implements Serializable {
     @ApiModelProperty("影院电话")
     private String cinemaTel;
 
+    @ApiModelProperty("影院品牌")
+    private String cinemaBrand;
+
+    @ApiModelProperty("影院商圈")
+    private String cinemaBd;
+
     @ApiModelProperty("创建时间")
     private String createCinema;
+
+
+
+    @TableField(exist = false)
+    private String filmstartTime;
+
+    @TableField(exist = false)
+    private String filmstartDate;
 
 
 }

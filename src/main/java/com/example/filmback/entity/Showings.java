@@ -33,12 +33,16 @@ public class Showings implements Serializable {
     @ApiModelProperty("场次ID")
     private Long showingsId;
 
+    //将Long转成string
+    @JsonSerialize(using = ToStringSerializer.class)
     @ApiModelProperty("影院ID")
     private Long cinemaId;
 
     @ApiModelProperty("影院名")
     private String cinemaName;
 
+    //将Long转成string
+    @JsonSerialize(using = ToStringSerializer.class)
     @ApiModelProperty("电影ID")
     private Long filmId;
 
@@ -63,8 +67,17 @@ public class Showings implements Serializable {
     @ApiModelProperty("视觉：2D；3D")
     private String showingsVision;
 
+    //将Long转成string
+    @JsonSerialize(using = ToStringSerializer.class)
+    //“type”：设置主键类型、如果数据库主键设置了自增建议使用“AUTO”(value="",type=Idtype.AUTO)
+    @ApiModelProperty("放映厅ID")
+    private Long hallId;
+
     @ApiModelProperty("放映厅号")
     private String hallNumber;
+
+    @ApiModelProperty("影厅类型：IMAX厅、CGS中国巨幕厅、Dolby Cinema厅、ReaID厅、4K厅、ReaID 6FL厅、LUXE巨幕厅、4DX厅、DTS:X临境音厅、4D厅、巨幕厅")
+    private String cinemaType;
 
     @ApiModelProperty("本场价格")
     private String showingsPrice;

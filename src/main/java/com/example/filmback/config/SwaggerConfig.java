@@ -44,9 +44,9 @@ public class SwaggerConfig {
     private ApiInfo apiInfo(String title, String version) {
         return new ApiInfoBuilder()
                 .title(title)
-                .description("更多请关注: https://blog.csdn.net/xqnode")
-                .termsOfServiceUrl("https://blog.csdn.net/xqnode")
-                .contact(new Contact("xqnode", "https://blog.csdn.net/xqnode", "xiaqingweb@163.com"))
+                .description("更多请关注qq：553227315")
+                .termsOfServiceUrl("https://user.qzone.qq.com/553227315")
+                .contact(new Contact("wyz", "https://user.qzone.qq.com/553227315", "553227315@qq.com"))
                 .version(version)
                 .build();
     }

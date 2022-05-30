@@ -11,7 +11,13 @@
     "core-js": "^3.6.5",
     "element-ui": "^2.15.6",
     "json-bigint": "^1.0.0",
+    "less-loader": "^5.0.0",
+    "node-sass": "^7.0.1",
+    "nprogress": "^0.2.0",
+    "sass-loader": "^5.0.0",
     "vue": "^2.6.11",
+    "vue-cropper": "^0.5.8",
+    "vue-jsonp": "^2.0.0",
     "vue-router": "^3.2.0"
   },
   "devDependencies": {

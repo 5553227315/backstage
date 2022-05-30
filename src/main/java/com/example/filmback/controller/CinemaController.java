@@ -4,12 +4,17 @@ import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.example.filmback.common.Constants;
+import com.example.filmback.common.Result;
 import com.example.filmback.entity.SnowflakeIdWorker;
+import com.example.filmback.entity.User;
+import com.example.filmback.exception.ServiceException;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.example.filmback.service.ICinemaService;
@@ -31,9 +36,13 @@ public class CinemaController {
     @Resource
     private ICinemaService cinemaService;
 
-    //新增或者更新
-    @PostMapping
-    public boolean save(@RequestBody Cinema cinema){
+    /**
+     * 新增或者更新
+     * @param cinema 影院类
+     * @return 保存是否成功
+     */
+    @PostMapping()
+    public Result save(@RequestBody Cinema cinema) {
 
         //判定新增还是更新
         if (cinema.getCinemaId() == null) {
@@ -41,31 +50,107 @@ public class CinemaController {
             SnowflakeIdWorker idWorker = new SnowflakeIdWorker(0, 0);
             Long id = idWorker.nextId();
             cinema.setCinemaId(id);
-            }
-        return cinemaService.saveOrUpdate(cinema);
+        }
+        if(cinemaService.saveOrUpdate(cinema)){
+            return Result.success("操作成功！",true);
+        }else {
+            throw new ServiceException(Constants.CODE_201,"操作失败！");
+        }
     }
 
-    //删除
+    /**
+     * 通过影院ID查询影院信息
+     * @param cinemaId 影院ID
+     * @return 返回影院信息
+     */
+    @GetMapping("/cinemaId")
+    public Result cinemaInfo(@RequestParam String cinemaId){
+        List<Cinema> cinemas = cinemaService.list(new QueryWrapper<Cinema>().eq("CINEMA_ID",cinemaId));
+        if (cinemas.size()==0){
+            throw new ServiceException(Constants.CODE_201,"没有该影院");
+        }else {
+            return Result.success("查询成功",cinemas.get(0));
+        }
+    }
+
+    /**
+     * 删除
+     * @param cinemaId 影院ID
+     * @return 是否删除
+     */
     @DeleteMapping("/{cinemaId}")
-    public boolean delete(@PathVariable Long cinemaId){
-        return cinemaService.removeById(cinemaId);
+    public Result delete(@PathVariable Long cinemaId){
+        if(cinemaService.removeById(cinemaId)){
+            return Result.success("删除成功！",true);
+        }else {
+            throw new ServiceException(Constants.CODE_201,"删除失败！");
+        }
     }
 
 
-    //查询所有
+    /**
+     * 查询所有影院
+     * @return 返回影院列表
+     */
     @GetMapping
-    public List<Cinema> findall(){
-        return cinemaService.list();
+    public Result findall(){
+        List<Cinema> cinemaList = cinemaService.list();
+        if (cinemaList.size()==0){
+            throw new ServiceException(Constants.CODE_201,"影院列表为空");
+        }else {
+            return Result.success("查询成功",cinemaList);
+
+        }
     }
 
-    //分页查询 mybatis-plus方法
+    /**
+     * 多字段查询影院
+     * @param search 搜索关键字
+     * @return 返回影院列表
+     */
+    @GetMapping("/searchCinema")
+    public Result filmList(@RequestParam String search){
+        List<Cinema> cinemaList = cinemaService.list(new QueryWrapper<Cinema>()
+                .and(queryWrapper -> queryWrapper
+                        .like("CINEMA_NAME",search)
+                        .or().like("CINEMA_ADDRESS",search)));
+        if (cinemaList.size()==0){
+            throw new ServiceException(Constants.CODE_404,"查询不到");
+        }else {
+            return Result.success("查询成功",cinemaList);
+        }
+    }
+
+    /**
+     *  通过影院ID查找影院数据
+     * @param cinemaId 影院ID
+     * @return 返回影院数据
+     */
+    @GetMapping("/cinemaLocation")
+    public Result findCinemaLocation(@RequestParam Long cinemaId){
+        List<Cinema> cinemas = cinemaService.list(new QueryWrapper<Cinema>()
+                .eq("CINEMA_ID",cinemaId));
+        if (cinemas.size()==0){
+            throw new ServiceException(Constants.CODE_404,"该影院已经下线");
+        }else {
+            return Result.success("查找成功!",cinemas.get(0));
+        }
+
+    }
+    /**
+     * 分页查询 mybatis-plus方法
+     * @param pageNum 分页查询第几页
+     * @param pageSize 每一页多少个
+     * @param cinemaName 影院名称
+     * @param cinemaAddress 影院地址
+     * @return 影院列表
+     */
     @GetMapping("/cinemaPage")
-    public Page<Cinema> findPage(@RequestParam Integer pageNum,
+    public Result findPage(@RequestParam Integer pageNum,
                                 @RequestParam Integer pageSize,
                                 //没有也可以查询
                                 @RequestParam(defaultValue = "") String cinemaName,
                                 @RequestParam(defaultValue = "") String cinemaAddress
-                                //@RequestParam(defaultValue = "") String tel
         ){
         Page<Cinema> page = new Page<>(pageNum,pageSize);
         QueryWrapper<Cinema> queryWrapper = new QueryWrapper<>();
@@ -78,9 +163,14 @@ public class CinemaController {
 
         //通过时间倒序
         queryWrapper.orderByDesc("CREATE_CINEMA");
-        return cinemaService.page(page,queryWrapper);
-
+        Page<Cinema> cinemaPage = cinemaService.page(page,queryWrapper);
+        if (cinemaPage.getTotal()==0){
+            throw new ServiceException(Constants.CODE_404, "列表为空！");
+        } else {
+            return Result.success("查询成功!", cinemaPage);
         }
+
+    }
     @GetMapping("/export")
     public void export(HttpServletResponse response) throws Exception {
 
